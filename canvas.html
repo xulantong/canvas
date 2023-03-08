@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas</title>
+</head>
+
+<body>
+    <style>
+        body {
+        }
+
+        canvas {
+            width: 130px;
+            height: 33px;
+            margin: 0 auto;
+            display: block;
+            border-radius: 8px;
+            border: 2px solid black;
+
+        }
+    </style>
+    <canvas id="canvas" width="130" height="33">浏览器不支持HTML5中的canvas，请升级浏览器或下载Chrome</canvas>
+
+    <script>
+        class Canvas {
+            constructor(canvas) {
+                this.canvas = document.getElementById(canvas)
+                this.context = this.canvas.getContext('2d')
+            }
+            clear() {
+                // this.canvas.width = this.canvas.width
+                this.context.clearRect(0, 0, 500, 500)
+            }
+
+            initLine(move = [0, 0], line = [0, 0], width = 10, color = '#bfc') {
+                //开始绘制
+                this.context.beginPath()
+                //画笔开始位置
+                this.context.moveTo(move[0], move[1])
+                //画笔结束位置
+                this.context.lineTo(line[0], line[1])
+                //直线颜色
+                this.context.strokeStyle = color
+                //直线宽度
+                this.context.lineWidth = width
+                //绘制
+                this.context.stroke()
+                //结束
+                this.context.closePath()
+            }
+
+            initLines(move = [0, 0], lineList = [], width = 10, color = '#bfc') {
+                this.context.beginPath()
+                this.context.moveTo(move[0], move[1])
+                lineList?.forEach(item => {
+                    this.context.lineTo(item.line[0], item.line[1])
+                })
+                this.context.strokeStyle = color
+                this.context.lineWidth = width
+                this.context.stroke()
+                this.context.closePath()
+            }
+
+            initDottedLine(move = [0, 0], line = [0, 0], width = 4, color = '#bfc', gutter = 5) {
+                let gutterX = 0, gutterY = 0
+                let x = move[0], y = move[1], lineTo = move
+                if (line[0] !== 0 && line[1] !== 0) {
+                    let dx = line[0] - move[0]
+                    let dy = line[1] - move[1]
+                    gutterX = (gutter * dx) / Math.sqrt(dx ** 2 + dy ** 2)
+                    gutterY = (gutter * dy) / Math.sqrt(dx ** 2 + dy ** 2)
+                }
+                while (x < line[0] || y < line[1]) {
+                    this.initLine([x, y], lineTo, width, color)
+                    if (x < line[0]) {
+                        x += 2 * gutterX
+                        lineTo[0] = x + gutterX
+                    }
+                    if (y < line[1]) {
+                        y += 2 * gutterY
+                        lineTo[1] = y + gutterY
+                    }
+                }
+            }
+
+            initFillRect(move = [0, 0, 0, 0], color) {
+                this.context.fillStyle = color
+                this.context.fillRect(...move)
+            }
+
+            initBar(data = [], gutter = 40) {
+                let rate = Math.max(...data) / 400
+                this.initLines([50, 50], [{ line: [50, 450] }, { line: [450, 450] }], 4)
+                data.forEach((item, index) => {
+                    let color = `rgb(${Math.random() * 256},${Math.random() * 256},${Math.random() * 256})`
+                    this.initFillRect([50 + (index + 1) * gutter, 450 - (item / rate), 20, item / rate], color)
+                })
+            }
+
+            initArc(center, radius, deg, direction) {
+                this.context.arc(...center, radius, ...deg, direction)
+                this.context.fillStyle = 'red'
+                this.context.fill()
+                this.context.strokeStyle = '#bfc'
+                this.context.lineWidth = 4
+                this.context.stroke()
+            }
+
+            initFillText(text, position = [0, 0], color = '#bfc') {
+                let deg = (Math.random() * 10 * Math.PI) / 180
+                this.context.rotate(deg)
+                this.context.font = 'bold 23px 微软雅黑';
+                this.context.fillStyle = color
+                this.context.fillText(text, ...position);
+                this.context.rotate(-deg)
+            }
+
+            initStrokeText(text, position = [0, 0], color = '#bfc') {
+                this.context.font = '30px Arial';
+                this.context.strokeText(text, ...position);
+            }
+        }
+
+        (function initCode(codeLength = 4, lineLength = 4, dotLength = 10) {
+            let c = new Canvas('canvas')
+            let str = "a,b,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,E,F,G,H,J,K,L,M,N,P,Q,R,S,T,W,X,Y,Z,1,2,3,4,5,6,7,8,9,0";
+            let arr = str.split(',')
+            let code = []
+            for (let index = 0; index < codeLength; index++) {
+                let num = Math.floor(Math.random() * arr.length)
+                c.initFillText(arr[num], [20 + index * 25, 18], `rgba(${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)},0.5)`)
+                code.push(arr[num])
+            }
+            for (let index = 0; index < lineLength; index++) {
+                c.initLine([Math.floor(Math.random() * 130), Math.floor(Math.random() * 33)], [Math.floor(Math.random() * 130), Math.floor(Math.random() * 33)], 1)
+            }
+            for (let index = 0; index < dotLength; index++) {
+                let x = Math.floor(Math.random() * 130)
+                let y = Math.floor(Math.random() * 33)
+                c.initLine([x, y], [x + 3, y + 4], 5, `rgb(${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)})`)
+            }
+        })()
+
+
+    </script>
+</body>
+
+</html>
